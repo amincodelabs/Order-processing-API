@@ -31,7 +31,7 @@ For an order creation request:
 
 `OrderEndpoints` owns order-related HTTP routes. It calls the inventory gRPC service before saving an order.
 
-`DatabaseSeeder` creates the database schema and adds starter products for local development.
+`DatabaseSeeder` applies pending EF Core migrations and adds starter products for local development.
 
 `InventoryGrpcService` owns inventory-related gRPC operations. It exposes stock-checking and stock-reservation RPCs through the `inventory.proto` contract.
 
@@ -53,7 +53,5 @@ Redis is used for fast, temporary data. In this version, it caches `GET /product
 Redis is a good fit here because product listing is read often, and stale data for a short time is acceptable. When product data or stock changes, the API deletes the cache entry.
 
 ## Current Limitations
-
-The project currently uses `EnsureCreatedAsync` instead of EF Core migrations. Migrations should replace it when the schema starts evolving.
 
 Order creation currently reserves inventory before database persistence. A future reliability improvement should add a release or compensation operation for failed multi-item order creation after a partial reservation.

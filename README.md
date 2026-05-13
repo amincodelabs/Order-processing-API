@@ -103,7 +103,7 @@ Pending, Paid, Packed, Shipped, Cancelled
 On startup, the API:
 
 1. Connects to SQL Server.
-2. Creates the database schema using `EnsureCreatedAsync`.
+2. Applies pending EF Core migrations.
 3. Seeds a few starter products if the database is empty.
 4. Connects to Redis.
 
@@ -114,6 +114,7 @@ On startup, the API:
 ```text
 Contracts/                  Request DTOs accepted by API endpoints
 Data/                       EF Core DbContext and database mapping
+Data/Migrations/            Versioned SQL Server schema changes
 Endpoints/                  Minimal API route groups
 Models/                     Domain/data models
 Services/                   Startup database seeding

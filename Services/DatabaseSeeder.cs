@@ -8,7 +8,7 @@ public sealed class DatabaseSeeder(OrderProcessingDbContext dbContext)
 {
     public async Task SeedAsync()
     {
-        await dbContext.Database.EnsureCreatedAsync();
+        await dbContext.Database.MigrateAsync();
 
         if (await dbContext.Products.AnyAsync())
         {
