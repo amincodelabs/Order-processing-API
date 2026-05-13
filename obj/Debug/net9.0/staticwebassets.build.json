@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "sQCg/fhaxY55kqzKvoG0VvwtC3qzP6hj3aX8foX4+48=",
+  "Source": "OrderProcessingApi",
+  "BasePath": "_content/OrderProcessingApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
