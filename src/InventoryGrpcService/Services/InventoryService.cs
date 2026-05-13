@@ -1,84 +1,90 @@
-using System.Collections.Concurrent;
+using System.Data;
 using Grpc.Core;
+using InventoryGrpcService.Data;
+using InventoryGrpcService.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryGrpcService.Services;
 
 public sealed class InventoryService : Inventory.InventoryBase
 {
-    private static readonly ConcurrentDictionary<string, int> StockByProductId = new(StringComparer.OrdinalIgnoreCase);
+    private const int DefaultStockQuantity = 100;
+    private readonly InventoryDbContext _dbContext;
     private readonly ILogger<InventoryService> _logger;
 
-    public InventoryService(ILogger<InventoryService> logger)
+    public InventoryService(InventoryDbContext dbContext, ILogger<InventoryService> logger)
     {
+        _dbContext = dbContext;
         _logger = logger;
     }
 
-    public override Task<CheckStockReply> CheckStock(CheckStockRequest request, ServerCallContext context)
+    public override async Task<CheckStockReply> CheckStock(CheckStockRequest request, ServerCallContext context)
     {
         if (!IsValidRequest(request.ProductId, request.Quantity, out var validationMessage))
         {
-            return Task.FromResult(new CheckStockReply
+            return new CheckStockReply
             {
                 IsAvailable = false,
                 AvailableQuantity = 0,
                 Message = validationMessage
-            });
+            };
         }
 
-        var availableQuantity = StockByProductId.GetOrAdd(request.ProductId, _ => 100);
-        var isAvailable = availableQuantity >= request.Quantity;
+        var inventory = await GetOrCreateInventoryAsync(request.ProductId, context.CancellationToken);
+        var isAvailable = inventory.AvailableQuantity >= request.Quantity;
 
-        return Task.FromResult(new CheckStockReply
+        return new CheckStockReply
         {
             IsAvailable = isAvailable,
-            AvailableQuantity = availableQuantity,
+            AvailableQuantity = inventory.AvailableQuantity,
             Message = isAvailable ? "Stock is available." : "Insufficient stock."
-        });
+        };
     }
 
-    public override Task<ReserveStockReply> ReserveStock(ReserveStockRequest request, ServerCallContext context)
+    public override async Task<ReserveStockReply> ReserveStock(ReserveStockRequest request, ServerCallContext context)
     {
         if (!IsValidRequest(request.ProductId, request.Quantity, out var validationMessage))
         {
-            return Task.FromResult(new ReserveStockReply
+            return new ReserveStockReply
             {
                 IsReserved = false,
                 RemainingQuantity = 0,
                 Message = validationMessage
-            });
+            };
         }
 
-        while (true)
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.Serializable,
+            context.CancellationToken);
+
+        var inventory = await GetOrCreateInventoryAsync(request.ProductId, context.CancellationToken);
+        if (inventory.AvailableQuantity < request.Quantity)
         {
-            var currentQuantity = StockByProductId.GetOrAdd(request.ProductId, _ => 100);
-            if (currentQuantity < request.Quantity)
-            {
-                _logger.LogWarning(
-                    "Stock reservation failed for product {ProductId}. Requested quantity: {Quantity}",
-                    request.ProductId,
-                    request.Quantity);
+            _logger.LogWarning(
+                "Stock reservation failed for product {ProductId}. Requested quantity: {Quantity}",
+                request.ProductId,
+                request.Quantity);
 
-                return Task.FromResult(new ReserveStockReply
-                {
-                    IsReserved = false,
-                    RemainingQuantity = currentQuantity,
-                    Message = "Insufficient stock."
-                });
-            }
-
-            var remainingQuantity = currentQuantity - request.Quantity;
-            if (!StockByProductId.TryUpdate(request.ProductId, remainingQuantity, currentQuantity))
+            return new ReserveStockReply
             {
-                continue;
-            }
-
-            return Task.FromResult(new ReserveStockReply
-            {
-                IsReserved = true,
-                RemainingQuantity = remainingQuantity,
-                Message = "Stock reserved."
-            });
+                IsReserved = false,
+                RemainingQuantity = inventory.AvailableQuantity,
+                Message = "Insufficient stock."
+            };
         }
+
+        inventory.AvailableQuantity -= request.Quantity;
+        inventory.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await _dbContext.SaveChangesAsync(context.CancellationToken);
+        await transaction.CommitAsync(context.CancellationToken);
+
+        return new ReserveStockReply
+        {
+            IsReserved = true,
+            RemainingQuantity = inventory.AvailableQuantity,
+            Message = "Stock reserved."
+        };
     }
 
     private static bool IsValidRequest(string productId, int quantity, out string message)
@@ -97,5 +103,29 @@ public sealed class InventoryService : Inventory.InventoryBase
 
         message = string.Empty;
         return true;
+    }
+
+    private async Task<ProductInventory> GetOrCreateInventoryAsync(string productId, CancellationToken cancellationToken)
+    {
+        var inventory = await _dbContext.ProductInventories
+            .FirstOrDefaultAsync(item => item.ProductId == productId, cancellationToken);
+
+        if (inventory is not null)
+        {
+            return inventory;
+        }
+
+        inventory = new ProductInventory
+        {
+            ProductId = productId,
+            AvailableQuantity = DefaultStockQuantity,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        _dbContext.ProductInventories.Add(inventory);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return inventory;
     }
 }

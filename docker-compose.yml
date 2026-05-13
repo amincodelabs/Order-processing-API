@@ -33,6 +33,10 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       Kestrel__EndpointDefaults__Protocols: Http2
+      ConnectionStrings__InventoryConnection: Server=sqlserver,1433;Database=OrderProcessingDb;User Id=sa;Password=Your_strong_password123;TrustServerCertificate=True;Encrypt=False
+    depends_on:
+      sqlserver:
+        condition: service_healthy
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest

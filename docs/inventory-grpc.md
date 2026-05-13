@@ -77,8 +77,18 @@ Container port:
 
 The service uses HTTP/2 because gRPC requires it.
 
-## Current Persistence
+## Persistence
 
-The current service keeps stock quantities in process memory. Unknown product IDs are initialized with a default quantity of `100`.
+The service stores inventory records in SQL Server through `InventoryDbContext`.
+
+Schema changes are versioned under:
+
+```text
+src/InventoryGrpcService/Data/Migrations
+```
+
+On startup, the service applies pending EF Core migrations before accepting requests.
+
+Unknown product IDs are initialized with a default quantity of `100` the first time they are checked or reserved.
 
 The Order Processing API calls `ReserveStock` during order creation before it persists the order.

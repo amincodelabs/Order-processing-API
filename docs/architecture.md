@@ -33,7 +33,7 @@ For an order creation request:
 
 `DatabaseSeeder` applies pending EF Core migrations and adds starter products for local development.
 
-`InventoryGrpcService` owns inventory-related gRPC operations. It exposes stock-checking and stock-reservation RPCs through the `inventory.proto` contract.
+`InventoryGrpcService` owns inventory-related gRPC operations. It exposes stock-checking and stock-reservation RPCs through the `inventory.proto` contract and persists inventory records through `InventoryDbContext`.
 
 ## Why SQL Server
 
@@ -43,6 +43,7 @@ SQL Server is used for durable business data:
 - stock quantity
 - orders
 - order items
+- inventory reservations
 
 This is data we do not want to lose when the app restarts.
 

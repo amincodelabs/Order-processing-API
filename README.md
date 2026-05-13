@@ -119,6 +119,8 @@ Endpoints/                  Minimal API route groups
 Models/                     Domain/data models
 Services/                   Startup database seeding
 src/InventoryGrpcService/   Inventory gRPC service
+src/InventoryGrpcService/Data/Migrations/
+                            Versioned inventory schema changes
 Program.cs                  Application composition and middleware setup
 ```
 
