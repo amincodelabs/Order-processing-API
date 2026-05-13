@@ -1,41 +1,61 @@
+using Microsoft.EntityFrameworkCore;
+using OrderProcessingApi.Data;
+using OrderProcessingApi.Endpoints;
+using OrderProcessingApi.Services;
+using StackExchange.Redis;
+using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+builder.Services.AddDbContext<OrderProcessingDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseSqlServer(connectionString);
+});
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+{
+    var connectionString = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    return ConnectionMultiplexer.Connect(connectionString);
+});
+
+builder.Services.AddScoped<DatabaseSeeder>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+await app.SeedDatabaseAsync();
 
-var summaries = new[]
+app.MapGet("/", () => Results.Ok(new
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    Name = "Order Processing API",
+    Version = "1.0"
+}));
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/health", async (OrderProcessingDbContext dbContext, IConnectionMultiplexer redis) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    var databaseAvailable = await dbContext.Database.CanConnectAsync();
+    var redisAvailable = await redis.GetDatabase().PingAsync();
+
+    return Results.Ok(new
+    {
+        Status = "Healthy",
+        Database = databaseAvailable ? "Available" : "Unavailable",
+        Redis = $"{redisAvailable.TotalMilliseconds:N0} ms"
+    });
+});
+
+app.MapProductEndpoints();
+app.MapOrderEndpoints();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
