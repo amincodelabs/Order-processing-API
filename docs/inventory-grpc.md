@@ -81,4 +81,4 @@ The service uses HTTP/2 because gRPC requires it.
 
 The current service keeps stock quantities in process memory. Unknown product IDs are initialized with a default quantity of `100`.
 
-The next implementation step is to make the Order Processing API call this gRPC service during order creation.
+The Order Processing API calls `ReserveStock` during order creation before it persists the order.

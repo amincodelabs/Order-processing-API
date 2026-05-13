@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderProcessingApi.Data;
 using OrderProcessingApi.Endpoints;
 using OrderProcessingApi.Services;
+using OrderProcessingApi.Services.Inventory;
 using StackExchange.Redis;
 using System.Text.Json.Serialization;
 
@@ -26,6 +27,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 });
 
 builder.Services.AddScoped<DatabaseSeeder>();
+builder.Services.AddSingleton<IInventoryClient, GrpcInventoryClient>();
 
 var app = builder.Build();
 

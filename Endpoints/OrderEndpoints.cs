@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderProcessingApi.Contracts;
 using OrderProcessingApi.Data;
 using OrderProcessingApi.Models;
+using OrderProcessingApi.Services.Inventory;
 using RedisConnectionMultiplexer = StackExchange.Redis.IConnectionMultiplexer;
 
 namespace OrderProcessingApi.Endpoints;
@@ -36,7 +37,9 @@ public static class OrderEndpoints
         group.MapPost("/", async (
             CreateOrderRequest request,
             OrderProcessingDbContext dbContext,
-            RedisConnectionMultiplexer redis) =>
+            RedisConnectionMultiplexer redis,
+            IInventoryClient inventoryClient,
+            CancellationToken cancellationToken) =>
         {
             if (string.IsNullOrWhiteSpace(request.CustomerName))
             {
@@ -66,9 +69,14 @@ public static class OrderEndpoints
             foreach (var item in request.Items)
             {
                 var product = products[item.ProductId];
-                if (product.StockQuantity < item.Quantity)
+                var reservation = await inventoryClient.ReserveStockAsync(
+                    product.Id,
+                    item.Quantity,
+                    cancellationToken);
+
+                if (!reservation.IsReserved)
                 {
-                    return Results.BadRequest($"Product '{product.Name}' does not have enough stock.");
+                    return Results.BadRequest($"Product '{product.Name}': {reservation.Message}");
                 }
             }
 
@@ -83,7 +91,7 @@ public static class OrderEndpoints
             foreach (var requestItem in request.Items)
             {
                 var product = products[requestItem.ProductId];
-                product.StockQuantity -= requestItem.Quantity;
+                product.StockQuantity = Math.Max(product.StockQuantity - requestItem.Quantity, 0);
 
                 order.Items.Add(new OrderItem
                 {

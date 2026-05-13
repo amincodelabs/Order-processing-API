@@ -17,9 +17,9 @@ For an order creation request:
 1. The client calls `POST /orders`.
 2. `OrderEndpoints` validates customer and item data.
 3. The API loads requested products from SQL Server.
-4. The API checks stock quantity.
-5. The API reduces product stock and saves the order plus order items.
-6. The API clears the product-list cache because stock changed.
+4. The API calls `InventoryGrpcService` to reserve stock for each item.
+5. The API saves the order plus order items in SQL Server.
+6. The API updates the local stock projection and clears the product-list cache.
 
 ## Main Components
 
@@ -29,7 +29,7 @@ For an order creation request:
 
 `ProductEndpoints` owns product-related HTTP routes. It also owns the Redis cache key for product lists.
 
-`OrderEndpoints` owns order-related HTTP routes. For now, it performs stock validation directly. Later, this logic will move behind a gRPC inventory service.
+`OrderEndpoints` owns order-related HTTP routes. It calls the inventory gRPC service before saving an order.
 
 `DatabaseSeeder` creates the database schema and adds starter products for local development.
 
@@ -56,4 +56,4 @@ Redis is a good fit here because product listing is read often, and stale data f
 
 The project currently uses `EnsureCreatedAsync` instead of EF Core migrations. Migrations should replace it when the schema starts evolving.
 
-The API currently checks inventory inside the order endpoint. That couples order creation to inventory rules. The next implementation step is to route inventory checks through the gRPC service.
+Order creation currently reserves inventory before database persistence. A future reliability improvement should add a release or compensation operation for failed multi-item order creation after a partial reservation.

@@ -132,4 +132,4 @@ Current operations:
 
 More detail: [docs/inventory-grpc.md](docs/inventory-grpc.md)
 
-The next implementation step is to make the REST API call the gRPC inventory service during order creation instead of checking stock directly in the API process.
+The REST API calls the gRPC inventory service during order creation before it persists the order.
