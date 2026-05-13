@@ -1,6 +1,6 @@
 # Order Processing API
 
-A learning project for building a practical .NET Web API with REST endpoints, SQL Server persistence, Redis caching, Docker, and later gRPC service-to-service communication.
+A practical .NET Web API with REST endpoints, SQL Server persistence, Redis caching, Docker, and gRPC service-to-service communication.
 
 The current version is a REST API for products and orders. Products are stored in SQL Server and cached in Redis. Orders validate product stock, reduce inventory, and save order items.
 
@@ -119,6 +119,4 @@ Services/    Startup database seeding
 Program.cs   Application composition and middleware setup
 ```
 
-## Next Learning Step
 
-The next step is to add a separate gRPC inventory service. The API will call that service during order creation instead of checking stock directly in the same process.
