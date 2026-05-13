@@ -12,6 +12,8 @@ Start the full development stack:
 docker compose up --build -d
 ```
 
+Before starting Docker Compose, create a local `.env` file from `.env.example` and set the SQL password and connection strings for your environment.
+
 The API is available at:
 
 ```text

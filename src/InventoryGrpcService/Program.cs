@@ -7,6 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<InventoryDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("InventoryConnection");
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("ConnectionStrings:InventoryConnection must be configured.");
+    }
+
     options.UseSqlServer(connectionString);
 });
 

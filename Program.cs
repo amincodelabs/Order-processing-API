@@ -19,6 +19,11 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddDbContext<OrderProcessingDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("ConnectionStrings:DefaultConnection must be configured.");
+    }
+
     options.UseSqlServer(connectionString);
 });
 

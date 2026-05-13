@@ -8,8 +8,11 @@ public sealed class OrderProcessingDbContextFactory : IDesignTimeDbContextFactor
     public OrderProcessingDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<OrderProcessingDbContext>();
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-            ?? "Server=localhost,1433;Database=OrderProcessingDb;User Id=sa;Password=Your_strong_password123;TrustServerCertificate=True;Encrypt=False";
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("ConnectionStrings__DefaultConnection must be configured.");
+        }
 
         optionsBuilder.UseSqlServer(connectionString);
 

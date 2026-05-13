@@ -8,8 +8,11 @@ public sealed class InventoryDbContextFactory : IDesignTimeDbContextFactory<Inve
     public InventoryDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<InventoryDbContext>();
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__InventoryConnection")
-            ?? "Server=localhost,1433;Database=OrderProcessingDb;User Id=sa;Password=Your_strong_password123;TrustServerCertificate=True;Encrypt=False";
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__InventoryConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("ConnectionStrings__InventoryConnection must be configured.");
+        }
 
         optionsBuilder.UseSqlServer(connectionString);
 
