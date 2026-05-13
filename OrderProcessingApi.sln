@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{68A85933
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryGrpcService.Tests", "tests\InventoryGrpcService.Tests\InventoryGrpcService.Tests.csproj", "{2BB83E65-78BB-44CB-BEAE-F69B5B8D72EB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessingApi.Tests", "tests\OrderProcessingApi.Tests\OrderProcessingApi.Tests.csproj", "{6C87984D-87F2-4B3F-8A3E-F8E8D3BA3B9D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{2BB83E65-78BB-44CB-BEAE-F69B5B8D72EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BB83E65-78BB-44CB-BEAE-F69B5B8D72EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BB83E65-78BB-44CB-BEAE-F69B5B8D72EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C87984D-87F2-4B3F-8A3E-F8E8D3BA3B9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C87984D-87F2-4B3F-8A3E-F8E8D3BA3B9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C87984D-87F2-4B3F-8A3E-F8E8D3BA3B9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C87984D-87F2-4B3F-8A3E-F8E8D3BA3B9D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -40,5 +46,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0FF66859-4834-4A3E-9626-7E37F2491A3C} = {8B98EB78-A810-4C1B-911B-873C1F88FAC0}
 		{2BB83E65-78BB-44CB-BEAE-F69B5B8D72EB} = {68A85933-F6EE-4F17-8B05-1EE9C8ABE412}
+		{6C87984D-87F2-4B3F-8A3E-F8E8D3BA3B9D} = {68A85933-F6EE-4F17-8B05-1EE9C8ABE412}
 	EndGlobalSection
 EndGlobal

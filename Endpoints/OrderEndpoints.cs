@@ -2,8 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderProcessingApi.Contracts;
 using OrderProcessingApi.Data;
 using OrderProcessingApi.Models;
-using OrderProcessingApi.Services.Inventory;
-using RedisConnectionMultiplexer = StackExchange.Redis.IConnectionMultiplexer;
+using OrderProcessingApi.Services.Orders;
 
 namespace OrderProcessingApi.Endpoints;
 
@@ -36,80 +35,16 @@ public static class OrderEndpoints
 
         group.MapPost("/", async (
             CreateOrderRequest request,
-            OrderProcessingDbContext dbContext,
-            RedisConnectionMultiplexer redis,
-            IInventoryClient inventoryClient,
+            IOrderService orderService,
             CancellationToken cancellationToken) =>
         {
-            if (string.IsNullOrWhiteSpace(request.CustomerName))
+            var result = await orderService.CreateOrderAsync(request, cancellationToken);
+            if (!result.IsSuccess)
             {
-                return Results.BadRequest("Customer name is required.");
+                return Results.BadRequest(result.ErrorMessage);
             }
 
-            if (request.Items.Count == 0)
-            {
-                return Results.BadRequest("At least one order item is required.");
-            }
-
-            if (request.Items.Any(item => item.Quantity <= 0))
-            {
-                return Results.BadRequest("Order item quantity must be greater than zero.");
-            }
-
-            var productIds = request.Items.Select(item => item.ProductId).Distinct().ToList();
-            var products = await dbContext.Products
-                .Where(product => productIds.Contains(product.Id))
-                .ToDictionaryAsync(product => product.Id);
-
-            if (products.Count != productIds.Count)
-            {
-                return Results.BadRequest("One or more products do not exist.");
-            }
-
-            foreach (var item in request.Items)
-            {
-                var product = products[item.ProductId];
-                var reservation = await inventoryClient.ReserveStockAsync(
-                    product.Id,
-                    item.Quantity,
-                    cancellationToken);
-
-                if (!reservation.IsReserved)
-                {
-                    return Results.BadRequest($"Product '{product.Name}': {reservation.Message}");
-                }
-            }
-
-            var order = new Order
-            {
-                Id = Guid.NewGuid(),
-                CustomerName = request.CustomerName.Trim(),
-                Status = OrderStatus.Pending,
-                CreatedAt = DateTimeOffset.UtcNow
-            };
-
-            foreach (var requestItem in request.Items)
-            {
-                var product = products[requestItem.ProductId];
-                product.StockQuantity = Math.Max(product.StockQuantity - requestItem.Quantity, 0);
-
-                order.Items.Add(new OrderItem
-                {
-                    Id = Guid.NewGuid(),
-                    ProductId = product.Id,
-                    ProductName = product.Name,
-                    Quantity = requestItem.Quantity,
-                    UnitPrice = product.Price
-                });
-            }
-
-            order.TotalAmount = order.Items.Sum(item => item.UnitPrice * item.Quantity);
-
-            dbContext.Orders.Add(order);
-            await dbContext.SaveChangesAsync();
-            await redis.GetDatabase().KeyDeleteAsync(ProductEndpoints.ProductsCacheKey);
-
-            return Results.Created($"/orders/{order.Id}", order);
+            return Results.Created($"/orders/{result.Order!.Id}", result.Order);
         });
 
         group.MapPatch("/{id:guid}/status", async (Guid id, OrderStatus status, OrderProcessingDbContext dbContext) =>

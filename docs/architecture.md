@@ -29,7 +29,7 @@ For an order creation request:
 
 `ProductEndpoints` owns product-related HTTP routes. It also owns the Redis cache key for product lists.
 
-`OrderEndpoints` owns order-related HTTP routes. It calls the inventory gRPC service before saving an order.
+`OrderEndpoints` owns order-related HTTP routes. `OrderService` owns order creation rules, including product lookup, inventory reservation, order persistence, stock projection updates, and product cache invalidation.
 
 `DatabaseSeeder` applies pending EF Core migrations and adds starter products for local development.
 
@@ -56,3 +56,9 @@ Redis is a good fit here because product listing is read often, and stale data f
 ## Current Limitations
 
 Order creation currently reserves inventory before database persistence. A future reliability improvement should add a release or compensation operation for failed multi-item order creation after a partial reservation.
+
+## Tests
+
+Order creation rules are covered by `tests/OrderProcessingApi.Tests`.
+
+Inventory reservation rules are covered by `tests/InventoryGrpcService.Tests`.

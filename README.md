@@ -44,6 +44,12 @@ Run only the inventory gRPC service tests:
 dotnet test tests/InventoryGrpcService.Tests/InventoryGrpcService.Tests.csproj
 ```
 
+Run only the order API service tests:
+
+```bash
+dotnet test tests/OrderProcessingApi.Tests/OrderProcessingApi.Tests.csproj
+```
+
 ## Containers
 
 `docker-compose.yml` starts three services:
