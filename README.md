@@ -30,6 +30,20 @@ Stop the stack and remove database/cache volumes:
 docker compose down -v
 ```
 
+## Run Tests
+
+Run all automated tests:
+
+```bash
+dotnet test OrderProcessingApi.sln
+```
+
+Run only the inventory gRPC service tests:
+
+```bash
+dotnet test tests/InventoryGrpcService.Tests/InventoryGrpcService.Tests.csproj
+```
+
 ## Containers
 
 `docker-compose.yml` starts three services:
@@ -121,6 +135,7 @@ Services/                   Startup database seeding
 src/InventoryGrpcService/   Inventory gRPC service
 src/InventoryGrpcService/Data/Migrations/
                             Versioned inventory schema changes
+tests/                      Automated test projects
 Program.cs                  Application composition and middleware setup
 ```
 

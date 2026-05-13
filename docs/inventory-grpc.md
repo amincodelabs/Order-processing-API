@@ -92,3 +92,13 @@ On startup, the service applies pending EF Core migrations before accepting requ
 Unknown product IDs are initialized with a default quantity of `100` the first time they are checked or reserved.
 
 The Order Processing API calls `ReserveStock` during order creation before it persists the order.
+
+## Tests
+
+Inventory reservation behavior is covered by:
+
+```text
+tests/InventoryGrpcService.Tests
+```
+
+The tests use SQLite in-memory storage so transaction behavior is exercised without requiring Docker or SQL Server.
