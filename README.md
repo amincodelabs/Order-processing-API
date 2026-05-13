@@ -2,7 +2,7 @@
 
 A practical .NET Web API with REST endpoints, SQL Server persistence, Redis caching, Docker, and gRPC service-to-service communication.
 
-The current version is a REST API for products and orders. Products are stored in SQL Server and cached in Redis. Orders validate product stock, reduce inventory, and save order items.
+The current version exposes REST APIs for products and orders, plus a separate inventory gRPC service. Products are stored in SQL Server and cached in Redis. Orders validate product stock, reduce inventory, and save order items.
 
 ## Run The App
 
@@ -37,6 +37,7 @@ docker compose down -v
 | Service | Purpose | Host Port |
 | --- | --- | --- |
 | `api` | .NET Order Processing API | `8080` |
+| `inventory-grpc` | Inventory gRPC service | `8081` |
 | `sqlserver` | SQL Server database | `1433` |
 | `redis` | Redis cache | `6379` |
 
@@ -111,12 +112,24 @@ On startup, the API:
 ## Project Structure
 
 ```text
-Contracts/   Request DTOs accepted by API endpoints
-Data/        EF Core DbContext and database mapping
-Endpoints/   Minimal API route groups
-Models/      Domain/data models
-Services/    Startup database seeding
-Program.cs   Application composition and middleware setup
+Contracts/                  Request DTOs accepted by API endpoints
+Data/                       EF Core DbContext and database mapping
+Endpoints/                  Minimal API route groups
+Models/                     Domain/data models
+Services/                   Startup database seeding
+src/InventoryGrpcService/   Inventory gRPC service
+Program.cs                  Application composition and middleware setup
 ```
 
+## Inventory gRPC Service
 
+The inventory service defines its contract in `src/InventoryGrpcService/Protos/inventory.proto`.
+
+Current operations:
+
+- `CheckStock`
+- `ReserveStock`
+
+More detail: [docs/inventory-grpc.md](docs/inventory-grpc.md)
+
+The next implementation step is to make the REST API call the gRPC inventory service during order creation instead of checking stock directly in the API process.

@@ -1,8 +1,12 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessingApi", "OrderProcessingApi.csproj", "{76A52F02-9DEB-2623-B3EE-B9C7AC3FBC1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8B98EB78-A810-4C1B-911B-873C1F88FAC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryGrpcService", "src\InventoryGrpcService\InventoryGrpcService.csproj", "{0FF66859-4834-4A3E-9626-7E37F2491A3C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,11 +18,18 @@ Global
 		{76A52F02-9DEB-2623-B3EE-B9C7AC3FBC1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76A52F02-9DEB-2623-B3EE-B9C7AC3FBC1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76A52F02-9DEB-2623-B3EE-B9C7AC3FBC1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FF66859-4834-4A3E-9626-7E37F2491A3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FF66859-4834-4A3E-9626-7E37F2491A3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FF66859-4834-4A3E-9626-7E37F2491A3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FF66859-4834-4A3E-9626-7E37F2491A3C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8AD4F2DB-DC30-4C72-9F63-673D75FFBDFC}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0FF66859-4834-4A3E-9626-7E37F2491A3C} = {8B98EB78-A810-4C1B-911B-873C1F88FAC0}
 	EndGlobalSection
 EndGlobal

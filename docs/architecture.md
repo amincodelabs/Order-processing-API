@@ -1,6 +1,6 @@
 # Architecture Notes
 
-This project is intentionally small, but it already uses the same building blocks found in larger backend systems.
+This service uses a small set of backend components that can evolve independently as the application grows.
 
 ## Request Flow
 
@@ -33,6 +33,8 @@ For an order creation request:
 
 `DatabaseSeeder` creates the database schema and adds starter products for local development.
 
+`InventoryGrpcService` owns inventory-related gRPC operations. It exposes stock-checking and stock-reservation RPCs through the `inventory.proto` contract.
+
 ## Why SQL Server
 
 SQL Server is used for durable business data:
@@ -52,6 +54,6 @@ Redis is a good fit here because product listing is read often, and stale data f
 
 ## Current Limitations
 
-The project currently uses `EnsureCreatedAsync` instead of EF Core migrations. That is acceptable for the first learning step, but migrations should replace it when the schema starts evolving.
+The project currently uses `EnsureCreatedAsync` instead of EF Core migrations. Migrations should replace it when the schema starts evolving.
 
-The API currently checks inventory inside the order endpoint. That is simple, but it couples order creation to inventory rules. The next step will extract inventory behavior into a gRPC service so we can practice service-to-service communication.
+The API currently checks inventory inside the order endpoint. That couples order creation to inventory rules. The next implementation step is to route inventory checks through the gRPC service.
